@@ -20,15 +20,17 @@ public class App {
         //Create and set up the window.
         JFrame frame = new JFrame("HelloWorldSwing");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //Add the ubiquitous "Hello World" label.
-        JLabel label = new JLabel("Hello World");
-        frame.getContentPane().add(label);
-
+        frame.setLayout(new FlowLayout());
         gd.setFullScreenWindow(frame);
 
+        //Add the ubiquitous "Hello World" label.
+        JLabel label = new JLabel("Hello World", JLabel.CENTER);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setVerticalAlignment(JLabel.CENTER);
+        label.setFont(new Font("Courier", Font.PLAIN, 48));
+        frame.add(label);
+
         //Display the window.
-        frame.pack();
         frame.setVisible(true);
     }
 
