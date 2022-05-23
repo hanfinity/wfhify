@@ -31,6 +31,7 @@ public class App {
         frame.add(label);
 
         //Display the window.
+        frame.pack();
         frame.setVisible(true);
     }
 
