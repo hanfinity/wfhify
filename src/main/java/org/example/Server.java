@@ -58,11 +58,11 @@ public class Server {
     }
 
     public void start(int port) {
-        while(true) {
-            try {
-                serverSocket = new ServerSocket(port);
-                clientSocket = serverSocket.accept();
-                pw = new PrintWriter(clientSocket.getOutputStream(), true);
+        try {
+            serverSocket = new ServerSocket(port);
+            clientSocket = serverSocket.accept();
+            pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            while(true) {
                 byte[] input = new byte[MAX_PKT];
                 byte b;
                 int i = 0;
@@ -76,14 +76,16 @@ public class Server {
                 int code = ByteBuffer.wrap(opcode).getInt();
                 switch(code) {
                     case HELLO:
+                        System.out.println("hello received");
                         label.setText("Client Connected!");
                         frame.revalidate();
+                        break;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
 
     public void stop() {
