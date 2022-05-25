@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Vector;
 
 import static org.example.MakePacket.MAX_PKT;
@@ -61,6 +62,7 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
             clientSocket = serverSocket.accept();
+            System.out.println("client connected from " + clientSocket.getInetAddress());
             pw = new PrintWriter(clientSocket.getOutputStream(), true);
             while(true) {
                 byte[] input = new byte[MAX_PKT];
@@ -69,8 +71,10 @@ public class Server {
                 do {
                     b = (byte) clientSocket.getInputStream().read();
                     input[i] = b;
+                    System.out.print(b + ",");
                     ++i;
                 } while (b != -1 && i < MAX_PKT);
+                System.out.println("\npacket received: " + Arrays.toString(input));
                 byte[] opcode = new byte[4];
                 System.arraycopy(input, 0, opcode, 0, 4);
                 int code = ByteBuffer.wrap(opcode).getInt();
