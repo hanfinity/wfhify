@@ -65,19 +65,31 @@ public class Server {
             System.out.println("client connected from " + clientSocket.getInetAddress());
             pw = new PrintWriter(clientSocket.getOutputStream(), true);
             while(true) {
-                byte[] input = new byte[MAX_PKT];
+                byte[] payload = new byte[MAX_PKT];
+                byte[] opcode = new byte[4];
+                byte[] size = new byte[4];
+                int code;
+                int msg_length = MAX_PKT + 8;
                 byte b;
                 int i = 0;
                 do {
                     b = (byte) clientSocket.getInputStream().read();
-                    input[i] = b;
+                    if(i<4) {
+                        opcode[i] = b;
+                    } else if(i<8) {
+                        size[i-4] = b;
+                        if(i == 7) {
+                            msg_length = ByteBuffer.wrap(size).getInt();
+                        }
+                    } else {
+                        payload[i-8] = b;
+                    }
                     System.out.print(b + ",");
                     ++i;
-                } while (b != -1 && i < MAX_PKT);
-                System.out.println("\npacket received: " + Arrays.toString(input));
-                byte[] opcode = new byte[4];
-                System.arraycopy(input, 0, opcode, 0, 4);
-                int code = ByteBuffer.wrap(opcode).getInt();
+                } while (b != -1 && i < msg_length + 8);
+                System.out.println("\npacket received: " + Arrays.toString(payload));
+                System.arraycopy(payload, 0, opcode, 0, 4);
+                code = ByteBuffer.wrap(opcode).getInt();
                 switch(code) {
                     case HELLO:
                         System.out.println("hello received");
