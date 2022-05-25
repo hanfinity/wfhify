@@ -19,10 +19,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Vector;
 
 import static org.example.MakePacket.MAX_PKT;
 import static org.example.OpCode.HELLO;
+import static org.example.OpCode.SET_MESS;
 
 
 public class Server {
@@ -94,8 +96,12 @@ public class Server {
                 switch(code) {
                     case HELLO:
                         System.out.println("hello received");
-                        label.setText("Client Connected!");
+                        label.setText("Connected");
                         frame.revalidate();
+                        break;
+                    case SET_MESS:
+                        System.out.println("new message received");
+                        setMessage(payload);
                         break;
                 }
             }
@@ -115,6 +121,13 @@ public class Server {
             e.printStackTrace();
         }
 
+    }
+
+    protected void setMessage(byte[] message) {
+        String m = Base64.getEncoder().encodeToString(message);
+        label.setText(m);
+        label.setFont(new Font("Courier", Font.PLAIN, 32));
+        frame.revalidate();
     }
 
     public static void main(String[] args) {

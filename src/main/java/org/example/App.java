@@ -1,10 +1,11 @@
 package org.example;
 
+import static org.example.MakePacket.set_mess;
+
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         Client client = new Client();
         client.startConnection("192.168.68.167", 6666);
-        String response = client.sendMessage("hello server");
-        System.out.println(response);
+        client.send_pkt(set_mess("hello world"));
     }
 }
