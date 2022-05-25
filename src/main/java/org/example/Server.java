@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Vector;
@@ -124,7 +125,8 @@ public class Server {
     }
 
     protected void setMessage(byte[] message) {
-        String m = Base64.getEncoder().encodeToString(message);
+        String m = new String(message, StandardCharsets.UTF_8);
+        System.out.println("New Message: " + m);
         label.setText(m);
         label.setFont(new Font("Courier", Font.PLAIN, 32));
         frame.revalidate();
