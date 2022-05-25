@@ -4,11 +4,14 @@ package org.example;
  * Hello world!
  *
  */
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+
 import javax.swing.*;
 import java.awt.*;
 
 
-public class App {
+public class Server {
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -36,6 +39,7 @@ public class App {
     }
 
     public static void main(String[] args) {
+        IoAcceptor acceptor = new NioSocketAcceptor();
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
