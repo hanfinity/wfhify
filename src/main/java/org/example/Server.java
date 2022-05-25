@@ -87,9 +87,10 @@ public class Server {
                     System.out.print(b + ",");
                     ++i;
                 } while (b != -1 && i < msg_length + 8);
-                System.out.println("\npacket received: " + Arrays.toString(payload));
-                System.arraycopy(payload, 0, opcode, 0, 4);
                 code = ByteBuffer.wrap(opcode).getInt();
+                System.out.println("\npacket received: " + Arrays.toString(payload));
+                System.out.println("opcode: " + code);
+                System.arraycopy(payload, 0, opcode, 0, 4);
                 switch(code) {
                     case HELLO:
                         System.out.println("hello received");
