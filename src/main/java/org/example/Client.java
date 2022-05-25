@@ -4,10 +4,14 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import static org.example.MakePacket.MAX_PKT;
+import static org.example.MakePacket.hello;
+
 public class Client {
     private Socket clientSocket;
     private PrintWriter pw;
     private BufferedReader in;
+    private OutputStream os;
 
     public static void main(String[] args) {
         if(args.length < 1) {
@@ -42,12 +46,27 @@ public class Client {
     public void startConnection(String ip, int port) {
         try {
             clientSocket = new Socket(ip, port);
-            pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            os = clientSocket.getOutputStream();
+            pw = new PrintWriter(os, true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            send_pkt(hello("asdf"));
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Couldn't open connection!");
+        } catch (Exception e) {
+            System.err.println("Failed to send hello packet");
         }
 
+    }
+
+    protected boolean send_pkt(byte[] pkt) {
+        if(pkt.length > MAX_PKT) return false;
+        try {
+            os.write(pkt);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public String sendMessage(String msg){
