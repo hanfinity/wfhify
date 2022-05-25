@@ -5,6 +5,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client {
+    private Socket clientSocket;
+    private PrintWriter pw;
+    private BufferedReader in;
 
     public static void main(String[] args) {
         if(args.length < 1) {
@@ -31,6 +34,38 @@ public class Client {
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void startConnection(String ip, int port) {
+        try {
+            clientSocket = new Socket(ip, port);
+            pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public String sendMessage(String msg){
+        pw.println(msg);
+        try {
+            String resp = in.readLine();
+            return resp;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public void stopConnection() {
+        try {
+            in.close();
+            pw.close();
+            clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
