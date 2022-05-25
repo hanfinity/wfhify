@@ -85,7 +85,7 @@ public class Server {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    createAndShowGUI(Inet4Address.getLocalHost().getCanonicalHostName());
+                    createAndShowGUI(Inet4Address.getLocalHost().getHostAddress());
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
