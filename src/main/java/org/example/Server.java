@@ -67,15 +67,16 @@ public class Server {
                 byte[] payload = new byte[MAX_PKT];
                 try {
                     code = readMessage(payload, clientSocket.getInputStream());
+                    System.out.println("\npacket received: " + Arrays.toString(payload));
+                    System.out.println("opcode: " + code);
                 } catch (SocketException s) {
                     System.out.println(s.getMessage());
                     live = false;
                 }
-                System.out.println("\npacket received: " + Arrays.toString(payload));
-                System.out.println("opcode: " + code);
                 switch (code) {
                     case ERR:
                         System.err.println("invalid message");
+                        break;
                     case HELLO:
                         System.out.println("hello received");
                         label.setText("Connected");
@@ -85,6 +86,8 @@ public class Server {
                         System.out.println("new message received");
                         setMessage(payload);
                         break;
+                    default:
+                        System.out.println("...");
                 }
             }
         } catch (IOException e) {
@@ -96,8 +99,6 @@ public class Server {
 
     public void stop() {
         try {
-            in.close();
-            pw.close();
             clientSocket.close();
             serverSocket.close();
         } catch (IOException e) {
