@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 import java.util.Vector;
 
 import static org.example.MakePacket.MAX_PKT;
@@ -119,6 +120,22 @@ public class Server {
     }
 
     public static void main(String[] args) {
+        new Thread(() -> {
+            Robot hal = null;
+            try {
+                hal = new Robot();
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
+            Random random = new Random();
+            while(true){
+                assert hal != null;
+                hal.delay(1000 * 60);
+                int x = random.nextInt() % 640;
+                int y = random.nextInt() % 480;
+                hal.mouseMove(x,y);
+            }
+        }).start();
         Server server=new Server();
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.

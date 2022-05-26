@@ -27,7 +27,7 @@ public class Client {
         boolean quit = false;
         while(!quit) {
             try {
-                client.send_pkt(set_mess("hello world"));
+                client.send_pkt(set_mess("foo bar baz"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
