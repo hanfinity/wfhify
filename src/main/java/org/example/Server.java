@@ -13,10 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Inet4Address;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -35,6 +32,7 @@ public class Server {
     private BufferedReader in;
     private JFrame frame;
     private JLabel label;
+    private String currMessage;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -62,54 +60,62 @@ public class Server {
     }
 
     public void start(int port) {
-        try {
-            serverSocket = new ServerSocket(port);
-            clientSocket = serverSocket.accept();
-            System.out.println("client connected from " + clientSocket.getInetAddress());
-            pw = new PrintWriter(clientSocket.getOutputStream(), true);
-            while(true) {
-                byte[] payload = new byte[MAX_PKT];
-                byte[] opcode = new byte[4];
-                byte[] size = new byte[4];
-                int code;
-                int msg_length = MAX_PKT + 8;
-                byte b;
-                int i = 0;
-                do {
-                    b = (byte) clientSocket.getInputStream().read();
-                    if(i<4) {
-                        opcode[i] = b;
-                    } else if(i<8) {
-                        size[i-4] = b;
-                        if(i == 7) {
-                            msg_length = ByteBuffer.wrap(size).getInt();
-                        }
-                    } else {
-                        payload[i-8] = b;
+        while (true) {
+            try {
+                serverSocket = new ServerSocket(port);
+                clientSocket = serverSocket.accept();
+                System.out.println("client connected from " + clientSocket.getInetAddress());
+                boolean live = true;
+                pw = new PrintWriter(clientSocket.getOutputStream(), true);
+                while (live) {
+                    byte[] payload = new byte[MAX_PKT];
+                    byte[] opcode = new byte[4];
+                    byte[] size = new byte[4];
+                    int code;
+                    int msg_length = MAX_PKT + 8;
+                    byte b;
+                    int i = 0;
+                    try {
+                        do {
+                            b = (byte) clientSocket.getInputStream().read();
+                            if (i < 4) {
+                                opcode[i] = b;
+                            } else if (i < 8) {
+                                size[i - 4] = b;
+                                if (i == 7) {
+                                    msg_length = ByteBuffer.wrap(size).getInt();
+                                }
+                            } else {
+                                payload[i - 8] = b;
+                            }
+                            System.out.print(b + ",");
+                            ++i;
+                        } while (b != -1 && i < msg_length + 8);
+                    } catch (SocketException s) {
+                        System.out.println(s.getMessage());
+                        live = false;
                     }
-                    System.out.print(b + ",");
-                    ++i;
-                } while (b != -1 && i < msg_length + 8);
-                code = ByteBuffer.wrap(opcode).getInt();
-                System.out.println("\npacket received: " + Arrays.toString(payload));
-                System.out.println("opcode: " + code);
-                System.arraycopy(payload, 0, opcode, 0, 4);
-                switch(code) {
-                    case HELLO:
-                        System.out.println("hello received");
-                        label.setText("Connected");
-                        frame.revalidate();
-                        break;
-                    case SET_MESS:
-                        System.out.println("new message received");
-                        setMessage(payload);
-                        break;
+                    code = ByteBuffer.wrap(opcode).getInt();
+                    System.out.println("\npacket received: " + Arrays.toString(payload));
+                    System.out.println("opcode: " + code);
+                    System.arraycopy(payload, 0, opcode, 0, 4);
+                    switch (code) {
+                        case HELLO:
+                            System.out.println("hello received");
+                            label.setText("Connected");
+                            frame.revalidate();
+                            break;
+                        case SET_MESS:
+                            System.out.println("new message received");
+                            setMessage(payload);
+                            break;
+                    }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
+        }
     }
 
     public void stop() {
@@ -130,6 +136,7 @@ public class Server {
         label.setText(m);
         label.setFont(new Font("Courier", Font.PLAIN, 32));
         frame.revalidate();
+        currMessage = m;
     }
 
     public static void main(String[] args) {
