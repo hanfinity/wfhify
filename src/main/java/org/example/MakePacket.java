@@ -1,5 +1,7 @@
 package org.example;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -7,6 +9,40 @@ import static org.example.OpCode.*;
 
 public class MakePacket {
     public static final int MAX_PKT = 100;
+
+    /**
+     * attempt to read a packet from a given input stream
+     * @param payload byte array to return message contents
+     * @param is InputStream to read the message from
+     * @return op code of the read in message
+     * @throws IOException if there is a problem reading from is
+     */
+    static int readMessage(byte[] payload, InputStream is) throws IOException {
+        int code;
+        int i = 0;
+        byte[] opcode = new byte[4];
+        byte[] size = new byte[4];
+        int msg_length = MAX_PKT + 8;
+        byte b;
+        do {
+            b = (byte) is.read();
+            if (i < 4) {
+                opcode[i] = b;
+            } else if (i < 8) {
+                size[i - 4] = b;
+                if (i == 7) {
+                    msg_length = ByteBuffer.wrap(size).getInt();
+                }
+            } else {
+                payload[i - 8] = b;
+            }
+            System.out.print(b + ",");
+            ++i;
+        } while (b != -1 && i < msg_length + 8);
+        code = ByteBuffer.wrap(opcode).getInt();
+        return code;
+    }
+
     static byte[] header(int opcode, int length) {
         byte[] toReturn = new byte[8];
         System.arraycopy(ByteBuffer.allocate(4).putInt(opcode).array(),

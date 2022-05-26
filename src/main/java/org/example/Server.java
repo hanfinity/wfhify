@@ -9,10 +9,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +18,8 @@ import java.util.Base64;
 import java.util.Vector;
 
 import static org.example.MakePacket.MAX_PKT;
-import static org.example.OpCode.HELLO;
-import static org.example.OpCode.SET_MESS;
+import static org.example.MakePacket.readMessage;
+import static org.example.OpCode.*;
 
 
 public class Server {
@@ -65,40 +62,20 @@ public class Server {
             clientSocket = serverSocket.accept();
             System.out.println("client connected from " + clientSocket.getInetAddress());
             boolean live = true;
-            pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            int code = ERR;
             while (live) {
                 byte[] payload = new byte[MAX_PKT];
-                byte[] opcode = new byte[4];
-                byte[] size = new byte[4];
-                int code;
-                int msg_length = MAX_PKT + 8;
-                byte b;
-                int i = 0;
                 try {
-                    do {
-                        b = (byte) clientSocket.getInputStream().read();
-                        if (i < 4) {
-                            opcode[i] = b;
-                        } else if (i < 8) {
-                            size[i - 4] = b;
-                            if (i == 7) {
-                                msg_length = ByteBuffer.wrap(size).getInt();
-                            }
-                        } else {
-                            payload[i - 8] = b;
-                        }
-                        System.out.print(b + ",");
-                        ++i;
-                    } while (b != -1 && i < msg_length + 8);
+                    code = readMessage(payload, clientSocket.getInputStream());
                 } catch (SocketException s) {
                     System.out.println(s.getMessage());
                     live = false;
                 }
-                code = ByteBuffer.wrap(opcode).getInt();
                 System.out.println("\npacket received: " + Arrays.toString(payload));
                 System.out.println("opcode: " + code);
-                System.arraycopy(payload, 0, opcode, 0, 4);
                 switch (code) {
+                    case ERR:
+                        System.err.println("invalid message");
                     case HELLO:
                         System.out.println("hello received");
                         label.setText("Connected");
@@ -115,6 +92,7 @@ public class Server {
         }
 
     }
+
 
     public void stop() {
         try {
