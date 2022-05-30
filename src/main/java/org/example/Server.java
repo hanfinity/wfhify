@@ -42,15 +42,32 @@ public class Server {
         //Create and set up the window.
         frame = new JFrame("HelloWorldSwing");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+        frame.setLayout(new GridBagLayout());
         gd.setFullScreenWindow(frame);
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+        //Add the ubiquitous "Hello World" label.
+        JLabel title = new JLabel();
+        title.setHorizontalAlignment(JLabel.LEFT);
+        title.setVerticalAlignment(JLabel.TOP);
+        title.setFont(new Font("Courier", Font.PLAIN, 36));
+        title.setOpaque(true);
+        title.setBackground(Color.CYAN);
+        title.setText("wfhify");
+        title.setMinimumSize(new Dimension(frame.getWidth(), 0));
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 0.5;
+        frame.add(title, c);
 
         //Add the ubiquitous "Hello World" label.
         label = new JLabel(message, SwingConstants.CENTER);
         label.setHorizontalAlignment(JLabel.CENTER);
-        label.setVerticalAlignment(JLabel.CENTER);
+        label.setVerticalAlignment(JLabel.BOTTOM);
         label.setFont(new Font("Courier", Font.PLAIN, 48));
-        frame.add(label);
+        c.gridy = 1;
+        frame.add(label, c);
 
         //Display the window.
         frame.pack();
