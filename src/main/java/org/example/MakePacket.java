@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -9,6 +10,7 @@ import static org.example.OpCode.*;
 
 public class MakePacket {
     public static final int MAX_PKT = 100;
+    public static final int NO_CONNECTION = -16777216;
 
     /**
      * attempt to read a packet from a given input stream
@@ -18,7 +20,7 @@ public class MakePacket {
      * @throws IOException if there is a problem reading from is
      */
     static int readMessage(byte[] payload, InputStream is) throws IOException {
-        int code;
+        int code = ERR;
         int i = 0;
         byte[] opcode = new byte[4];
         byte[] size = new byte[4];
@@ -26,6 +28,7 @@ public class MakePacket {
         byte b;
         do {
             b = (byte) is.read();
+            // if (b == -1) throw (new SocketException("no data from remote side"));
             if (i < 4) {
                 opcode[i] = b;
             } else if (i < 8) {

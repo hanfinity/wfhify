@@ -18,12 +18,12 @@ import java.util.Base64;
 import java.util.Random;
 import java.util.Vector;
 
-import static org.example.MakePacket.MAX_PKT;
-import static org.example.MakePacket.readMessage;
+import static org.example.MakePacket.*;
 import static org.example.OpCode.*;
 
 
 public class Server {
+    public static final int TIMEOUT = 15000;
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private PrintWriter pw;
@@ -65,18 +65,29 @@ public class Server {
             System.out.println("client connected from " + clientSocket.getInetAddress());
             boolean live = true;
             int code = ERR;
+            long time = System.currentTimeMillis();
             while (live) {
                 byte[] payload = new byte[MAX_PKT];
                 try {
                     code = readMessage(payload, clientSocket.getInputStream());
-                    System.out.println("\npacket received:");
-                    System.out.println("opcode: " + code);
+                    if(code == NO_CONNECTION) {
+                        System.out.println("\nno new data...");
+                    } else {
+                        System.out.println("\npacket received:");
+                        System.out.println("opcode: " + code);
+                    }
                 } catch (SocketException s) {
                     System.out.println(s.getMessage());
                     live = false;
                     code = ERR;
                 }
+                if(code != ERR && code != NO_CONNECTION) time = System.currentTimeMillis();
                 switch (code) {
+                    case NO_CONNECTION:
+                        long remain = (System.currentTimeMillis() - time);
+                        System.out.println("Waiting for data, timeout in " +
+                                (TIMEOUT - remain) /1000 + " sec");
+                        break;
                     case ERR:
                         System.err.println("something's not right");
                         break;
@@ -92,13 +103,15 @@ public class Server {
                     default:
                         System.out.println("...");
                 }
+                if(System.currentTimeMillis() - time > TIMEOUT) {
+                    break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
-
 
     public void stop() {
         try {

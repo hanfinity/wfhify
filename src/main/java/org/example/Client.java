@@ -3,6 +3,8 @@ package org.example;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.Buffer;
+import java.util.Scanner;
 
 import static org.example.MakePacket.*;
 
@@ -12,28 +14,54 @@ public class Client {
     private InputStream in;
     private OutputStream os;
 
+    private static final String persist = "hist.txt";
     private static final String menu = "Menu:\n" +
             "Please Make a selection:\n" +
-            "1 - ";
+            "1 - Set Message\n" +
+            "2 - Get Current Message\n" +
+            "3 - Enter Scheduled Message\n" +
+            "4 - Get Scheduled Messages\n" +
+            "5 - Set Working Hours\n" +
+            "6 - Get Working Hours\n" +
+            "7 - Set After Hours Message\n" +
+            "8 - Quit\n" +
+            "Please enter your selection:";
 
-    public static void main(String[] args) {
-        if(args.length < 1) {
-            System.out.println("Invalid URL");
-            System.exit(1);
+    public static void main(String[] args) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String domainName = load_url();
+        if(domainName.equals("")) {
+            System.out.println("No saved url, please enter an address: ");
+            domainName = reader.readLine();
         }
-        String domainName = args[0];
+        System.out.println("Connecting to " + domainName);
         Client client = new Client();
-        client.startConnection("192.168.68.167", 6666);
+        client.startConnection(domainName, 6666);
         boolean quit = false;
         while(!quit) {
-            try {
-                client.send_pkt(set_mess("foo bar baz"));
-            } catch (Exception e) {
-                e.printStackTrace();
+            System.out.println(menu);
+            int choice = Integer.parseInt(reader.readLine());
+            switch (choice) {
+                case 1: // set the current message
+                    System.out.println("Please enter message:");
+                    try {
+                        client.send_pkt(set_mess(reader.readLine()));
+                    } catch (Exception e) {
+                        System.err.println("Failed to set message: " + e.getMessage());
+                    }
+                    break;
+                case 2: // get the current message
+
+                case 8: // exit client application
+                    System.out.println("Goodbye!");
+                    quit = true;
+                    break;
+                default:
+                    System.out.println("Invalid option");
             }
-            quit = true;
         }
         client.stopConnection();
+        save_url(domainName);
     }
 
     public void startConnection(String ip, int port) {
@@ -73,5 +101,25 @@ public class Client {
 
     public static String get(String url) {
         return "";
+    }
+
+    protected static String load_url() {
+        try {
+            File inFile = new File (persist);
+            Scanner scan = new Scanner(inFile);
+            return scan.nextLine();
+        } catch (FileNotFoundException e) {
+            return "";
+        }
+    }
+
+    protected static void save_url(String url) {
+        try {
+            BufferedWriter write = new BufferedWriter(new FileWriter(persist));
+            write.write(url);
+            write.close();
+        } catch (Exception e) {
+            System.err.println("Failed to write to " + persist);
+        }
     }
 }
