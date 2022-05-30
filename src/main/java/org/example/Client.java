@@ -97,7 +97,7 @@ public class Client {
         byte[] message = new byte[MAX_PKT];
         int code = readMessage(message, in);
         String message_text = new String(message, StandardCharsets.UTF_8);
-        return message_text;
+        return message_text.trim();
     }
 
     public void stopConnection() {
