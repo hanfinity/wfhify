@@ -39,7 +39,7 @@ public class MakePacket {
             } else {
                 payload[i - 8] = b;
             }
-            System.out.print(b + ",");
+            //System.out.print(b + ",");
             ++i;
         } while (b != -1 && i < msg_length + 8);
         code = ByteBuffer.wrap(opcode).getInt();
@@ -104,6 +104,7 @@ public class MakePacket {
 
     static byte[] payload_packet(int code, String message) throws Exception {
         byte[] toReturn = new byte[48];
+        message = message.trim();
         if(message.length() > 40 || message.length() < 1) {
             throw(new Exception("message size invalid"));
         } else {

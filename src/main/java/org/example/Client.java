@@ -55,7 +55,7 @@ public class Client {
                 case 2: // get the current message
                     client.send_pkt(get_mess());
                     System.out.println("Current message: " + client.getPacket());
-
+                    break;
                 case 8: // exit client application
                     System.out.println("Goodbye!");
                     quit = true;
