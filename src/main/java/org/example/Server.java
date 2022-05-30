@@ -96,14 +96,14 @@ public class Server {
                         break;
                     case HELLO:
                         System.out.println("hello received");
-                        setMessage("connected: " + clientSocket.getLocalAddress());
+                        setMessage("connected:\n" + clientSocket.getLocalAddress());
                         break;
                     case SET_MESS:
                         System.out.println("new message received");
                         setMessage(payload);
                         break;
                     case LIST_MESS:
-                        System.out.println("client requested current message");
+                        System.out.println("client requested current message: " + currMessage);
                         os.write(list_mess(currMessage));
                         break;
                     default:
