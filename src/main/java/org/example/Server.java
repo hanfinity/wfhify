@@ -47,7 +47,7 @@ public class Server {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        //Add the ubiquitous "Hello World" label.
+        // add title
         JLabel title = new JLabel();
         title.setHorizontalAlignment(JLabel.LEFT);
         title.setVerticalAlignment(JLabel.TOP);
@@ -61,12 +61,15 @@ public class Server {
         c.weightx = 0.5;
         frame.add(title, c);
 
-        //Add the ubiquitous "Hello World" label.
+        c.gridy = 1;
+        frame.add(new JSeparator(SwingConstants.HORIZONTAL), c);
+
+        // message label
         label = new JLabel(message, SwingConstants.CENTER);
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setVerticalAlignment(JLabel.BOTTOM);
         label.setFont(new Font("Courier", Font.PLAIN, 48));
-        c.gridy = 1;
+        c.gridy = 2;
         frame.add(label, c);
 
         //Display the window.
@@ -155,7 +158,7 @@ public class Server {
 
     protected void setMessage(String m) {
         System.out.println("new message: " + m);
-        label.setText(m);
+        label.setText("<html>" + m + "</html>");
         label.setFont(new Font("Courier", Font.PLAIN, 42));
         frame.revalidate();
         currMessage = m;
