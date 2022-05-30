@@ -4,9 +4,11 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.Buffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 import static org.example.MakePacket.*;
+import static org.example.OpCode.*;
 
 public class Client {
     private Socket clientSocket;
@@ -51,6 +53,8 @@ public class Client {
                     }
                     break;
                 case 2: // get the current message
+                    client.send_pkt(get_mess());
+                    System.out.println("Current message: " + client.getPacket());
 
                 case 8: // exit client application
                     System.out.println("Goodbye!");
@@ -87,6 +91,13 @@ public class Client {
             e.printStackTrace();
             return false;
         }
+    }
+
+    protected String getPacket() throws IOException {
+        byte[] message = new byte[MAX_PKT];
+        int code = readMessage(message, in);
+        String message_text = new String(message, StandardCharsets.UTF_8);
+        return message_text;
     }
 
     public void stopConnection() {

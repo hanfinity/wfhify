@@ -87,11 +87,27 @@ public class MakePacket {
      * @throws Exception if message is invalid
      */
     static byte[] set_mess(String message) throws Exception {
+        return payload_packet(SET_MESS, message);
+    }
+
+    static byte[] list_mess(String message) throws Exception {
+        return payload_packet(LIST_RESP, message);
+    }
+
+    /**
+     * create a packet instructing the server to return the current message
+     * @return byte array representing the packet
+     */
+    static byte[] get_mess(){
+        return header(LIST_MESS, 0);
+    }
+
+    static byte[] payload_packet(int code, String message) throws Exception {
         byte[] toReturn = new byte[48];
         if(message.length() > 40 || message.length() < 1) {
             throw(new Exception("message size invalid"));
         } else {
-            System.arraycopy(header(SET_MESS, 40), 0, toReturn, 0, 8);
+            System.arraycopy(header(code, 40), 0, toReturn, 0, 8);
             System.arraycopy(message.getBytes(StandardCharsets.UTF_8), 0, toReturn, 8, message.length());
             for(int i=message.length(); i<40; ++i) {
                 toReturn[i + 8] = 0x00;

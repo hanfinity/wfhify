@@ -26,11 +26,11 @@ public class Server {
     public static final int TIMEOUT = 15000;
     private ServerSocket serverSocket;
     private Socket clientSocket;
-    private PrintWriter pw;
-    private BufferedReader in;
     private JFrame frame;
     private JLabel label;
     private String currMessage;
+    private InputStream in;
+    private OutputStream os;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -62,6 +62,8 @@ public class Server {
             serverSocket = new ServerSocket(port);
             System.out.println("waiting to connect...");
             clientSocket = serverSocket.accept();
+            os = clientSocket.getOutputStream();
+            in = clientSocket.getInputStream();
             System.out.println("client connected from " + clientSocket.getInetAddress());
             boolean live = true;
             int code = ERR;
@@ -69,7 +71,7 @@ public class Server {
             while (live) {
                 byte[] payload = new byte[MAX_PKT];
                 try {
-                    code = readMessage(payload, clientSocket.getInputStream());
+                    code = readMessage(payload, in);
                     if(code == NO_CONNECTION) {
                         System.out.println("\nno new data...");
                     } else {
@@ -87,6 +89,7 @@ public class Server {
                         long remain = (System.currentTimeMillis() - time);
                         System.out.println("Waiting for data, timeout in " +
                                 (TIMEOUT - remain) /1000 + " sec");
+                        Thread.sleep(1000);
                         break;
                     case ERR:
                         System.err.println("something's not right");
@@ -100,6 +103,9 @@ public class Server {
                         System.out.println("new message received");
                         setMessage(payload);
                         break;
+                    case LIST_MESS:
+                        System.out.println("client requested current message");
+                        os.write(list_mess(label.getText()));
                     default:
                         System.out.println("...");
                 }
@@ -107,7 +113,9 @@ public class Server {
                     break;
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Something went wrong: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
