@@ -96,8 +96,7 @@ public class Server {
                         break;
                     case HELLO:
                         System.out.println("hello received");
-                        label.setText("connected");
-                        frame.revalidate();
+                        setMessage("connected: " + clientSocket.getLocalAddress());
                         break;
                     case SET_MESS:
                         System.out.println("new message received");
@@ -105,7 +104,8 @@ public class Server {
                         break;
                     case LIST_MESS:
                         System.out.println("client requested current message");
-                        os.write(list_mess(label.getText()));
+                        os.write(list_mess(currMessage));
+                        break;
                     default:
                         System.out.println("...");
                 }
@@ -133,9 +133,13 @@ public class Server {
 
     protected void setMessage(byte[] message) {
         String m = new String(message, StandardCharsets.UTF_8);
+        setMessage(m);
+    }
+
+    protected void setMessage(String m) {
         System.out.println("new message: " + m);
         label.setText(m);
-        label.setFont(new Font("Courier", Font.PLAIN, 32));
+        label.setFont(new Font("Courier", Font.PLAIN, 42));
         frame.revalidate();
         currMessage = m;
     }
