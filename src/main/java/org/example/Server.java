@@ -201,6 +201,7 @@ public class Server {
             return list_mess("OK");
         } catch (Exception e) {
             System.out.println("invalid time: " + e.getMessage());
+            e.printStackTrace();
             return error(ILLEGAL_MESS);
         }
     }

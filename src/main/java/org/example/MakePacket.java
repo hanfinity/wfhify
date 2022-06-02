@@ -126,19 +126,19 @@ public class MakePacket {
         }
         if(code != -1) {
             System.arraycopy(ByteBuffer.allocate(2).putShort(startH).array(),
-                    2,
+                    0,
                     toReturn,
                     48, 2);
             System.arraycopy(ByteBuffer.allocate(2).putShort(startM).array(),
-                    2,
+                    0,
                     toReturn,
                     50, 2);
             System.arraycopy(ByteBuffer.allocate(2).putShort(endH).array(),
-                    2,
+                    0,
                     toReturn,
                     52, 2);
             System.arraycopy(ByteBuffer.allocate(2).putShort(endM).array(),
-                    2,
+                    0,
                     toReturn,
                     54, 2);
         }
