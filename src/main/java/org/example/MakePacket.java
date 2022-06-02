@@ -93,8 +93,8 @@ public class MakePacket {
         return text_packet(LIST_RESP, message);
     }
 
-    static byte[] set_sched(String message, int start, int end) throws Exception {
-        return generic_packet(MAKE_SCHED, message, start, end);
+    static byte[] set_sched(String message, int startH, int startM, int endH, int endM) throws Exception {
+        return generic_packet(MAKE_SCHED, message, startH, startM, endH, endM);
     }
 
     /**
@@ -106,13 +106,13 @@ public class MakePacket {
     }
 
     static byte[] text_packet(int code, String message) throws Exception {
-        return generic_packet(code, message, -1, -1);
+        return generic_packet(code, message, -1, -1, -1, -1);
     }
 
-    private static byte[] generic_packet(int code, String message, int start, int end) throws Exception {
+    private static byte[] generic_packet(int code, String message, int startH, int startM, int endH, int endM) throws Exception {
 
         byte[] toReturn;
-        if(start == -1) toReturn = new byte[48];
+        if(startH == -1) toReturn = new byte[48];
         else toReturn = new byte[56];
         message = message.trim();
         if(message.length() > 40 || message.length() < 1) {
@@ -125,14 +125,22 @@ public class MakePacket {
             }
         }
         if(code != -1) {
-            System.arraycopy(ByteBuffer.allocate(4).putInt(start).array(),
-                    0,
+            System.arraycopy(ByteBuffer.allocate(4).putInt(startH).array(),
+                    2,
                     toReturn,
-                    48, 4);
-            System.arraycopy(ByteBuffer.allocate(4).putInt(start).array(),
-                    0,
+                    48, 2);
+            System.arraycopy(ByteBuffer.allocate(4).putInt(startM).array(),
+                    2,
                     toReturn,
-                    52, 4);
+                    50, 2);
+            System.arraycopy(ByteBuffer.allocate(4).putInt(endH).array(),
+                    2,
+                    toReturn,
+                    52, 2);
+            System.arraycopy(ByteBuffer.allocate(4).putInt(endM).array(),
+                    2,
+                    toReturn,
+                    54, 2);
         }
         return toReturn;
     }

@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.example.MakePacket.*;
 import static org.example.OpCode.*;
@@ -45,7 +47,7 @@ public class Client {
             int choice = Integer.parseInt(reader.readLine());
             switch (choice) {
                 case 1: // set the current message
-                    System.out.println("Please enter message:");
+                    System.out.println("Please enter message: (max 40 characters)");
                     try {
                         client.send_pkt(set_mess(reader.readLine()));
                     } catch (Exception e) {
@@ -55,6 +57,19 @@ public class Client {
                 case 2: // get the current message
                     client.send_pkt(get_mess());
                     System.out.println("Current message: " + client.getPacket());
+                    break;
+                case 3: // create a scheduled message
+                    System.out.println("Please enter message: (max 40 characters)");
+                    String message = reader.readLine();
+                    System.out.println("Please enter start time (hh:mm)(24h)");
+                    String start = reader.readLine();
+                    System.out.println("Please enter start time (hh:mm)(24h)");
+                    String end = reader.readLine();
+                    try {
+                        client.makeSchedule(message, start, end);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 8: // exit client application
                     System.out.println("Goodbye!");
@@ -66,6 +81,17 @@ public class Client {
         }
         client.stopConnection();
         save_url(domainName);
+    }
+
+    protected void makeSchedule(String message, String start, String end) throws Exception {
+        Pattern time = Pattern.compile("(\\d\\d):(\\d\\d)");
+        Matcher startMatch = time.matcher(start);
+        Matcher endMatch = time.matcher(end);
+        send_pkt(set_sched(message,
+                Integer.parseInt(startMatch.group(1)),
+                Integer.parseInt(startMatch.group(2)),
+                Integer.parseInt(endMatch.group(1)),
+                Integer.parseInt(endMatch.group(2))));
     }
 
     public void startConnection(String ip, int port) {

@@ -136,7 +136,7 @@ public class Server {
                         os.write(list_mess(currMessage));
                         break;
                     case MAKE_SCHED:
-                        System.out.println("client producing a message");
+                        System.out.println("client scheduling a message");
                         os.write(decodeSchedulePacket(payload));
                         break;
                     default:
@@ -215,8 +215,13 @@ public class Server {
     protected void scheduleMessage(int start_hour, int start_minute, int end_hour, int end_minute, byte[] message) throws Exception{
         ZonedDateTime now = ZonedDateTime.now();
         if(start_hour > 23 || start_hour < 0 || start_minute > 59 || start_minute < 0) {
-            throw new Exception("Invalid time: " + start_hour + ":" + start_minute);
+            throw new Exception("Invalid start time: " + start_hour + ":" + start_minute);
         }
+        if(end_hour > 23 || end_hour < 0 || end_minute > 59 || end_minute < 0) {
+            throw new Exception("Invalid end time: " + end_hour + ":" + end_minute);
+        }
+        System.out.println("message schedule: " + start_hour + ":" + start_minute + " - " +
+                end_hour + ":" + end_minute);
         ZonedDateTime next = now.withHour(start_hour).withMinute(start_minute).withSecond(0);
         if(now.compareTo(next) > 0) next = next.plusDays(1);
         Duration dur = Duration.between(now, next);
