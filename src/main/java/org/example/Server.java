@@ -192,10 +192,10 @@ public class Server {
                 0, 2);
         try {
             scheduleMessage(
-                    ByteBuffer.wrap(startHA).getInt(),
-                    ByteBuffer.wrap(startMA).getInt(),
-                    ByteBuffer.wrap(endHA).getInt(),
-                    ByteBuffer.wrap(endMA).getInt(),
+                    ByteBuffer.wrap(startHA).getShort(),
+                    ByteBuffer.wrap(startMA).getShort(),
+                    ByteBuffer.wrap(endHA).getShort(),
+                    ByteBuffer.wrap(endMA).getShort(),
                     message
             );
             return list_mess("OK");
