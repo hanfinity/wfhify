@@ -13,11 +13,15 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Random;
-import java.util.Vector;
+import java.sql.Time;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import static org.example.Err.ILLEGAL_MESS;
 import static org.example.MakePacket.*;
 import static org.example.OpCode.*;
 
@@ -31,11 +35,16 @@ public class Server {
     private String currMessage;
     private InputStream in;
     private OutputStream os;
+    private Map<byte[], ScheduledExecutorService> schedule;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
      * event-dispatching thread.
      */
+    public Server() {
+        schedule = new HashMap<>();
+    }
+
     private void createAndShowGUI(String message) {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
@@ -116,7 +125,7 @@ public class Server {
                         break;
                     case HELLO:
                         System.out.println("hello received");
-                        setMessage("connected:\n" + clientSocket.getLocalAddress());
+                        setMessage("connected:<br>" + clientSocket.getLocalAddress());
                         break;
                     case SET_MESS:
                         System.out.println("new message received");
@@ -125,6 +134,10 @@ public class Server {
                     case LIST_MESS:
                         System.out.println("client requested current message: " + currMessage);
                         os.write(list_mess(currMessage));
+                        break;
+                    case MAKE_SCHED:
+                        System.out.println("client producing a message");
+                        os.write(decodeSchedulePacket(payload));
                         break;
                     default:
                         System.out.println("...");
@@ -149,6 +162,71 @@ public class Server {
             e.printStackTrace();
         }
 
+    }
+
+    protected byte[] decodeSchedulePacket(byte[] payload) {
+        byte[] message = new byte[40];
+        System.arraycopy(payload,
+                0,
+                message,
+                0, 40);
+        byte[] startHA = new byte[2];
+        System.arraycopy(payload,
+                40,
+                startHA,
+                0, 2);
+        byte[] startMA = new byte[2];
+        System.arraycopy(payload,
+                42,
+                startMA,
+                0, 2);
+        byte[] endHA = new byte[2];
+        System.arraycopy(payload,
+                44,
+                endHA,
+                0, 2);
+        byte[] endMA = new byte[2];
+        System.arraycopy(payload,
+                46,
+                endMA,
+                0, 2);
+        try {
+            scheduleMessage(
+                    ByteBuffer.wrap(startHA).getInt(),
+                    ByteBuffer.wrap(startMA).getInt(),
+                    ByteBuffer.wrap(endHA).getInt(),
+                    ByteBuffer.wrap(endMA).getInt(),
+                    message
+            );
+            return list_mess("OK");
+        } catch (Exception e) {
+            System.out.println("invalid time");
+            return error(ILLEGAL_MESS);
+        }
+    }
+
+    /**
+     * function to create a scheduled message
+     * @param start_hour the hour (24h format) of the day to change the message
+     * @param start_minute the minute of the day to change the message
+     * @param message the message (in byte array form)
+     * @throws Exception if the start_hour or start_minute are invalid
+     */
+    protected void scheduleMessage(int start_hour, int start_minute, int end_hour, int end_minute, byte[] message) throws Exception{
+        ZonedDateTime now = ZonedDateTime.now();
+        if(start_hour > 23 || start_hour < 0 || start_minute > 59 || start_minute < 0) {
+            throw new Exception("Invalid time: " + start_hour + ":" + start_minute);
+        }
+        ZonedDateTime next = now.withHour(start_hour).withMinute(start_minute).withSecond(0);
+        if(now.compareTo(next) > 0) next = next.plusDays(1);
+        Duration dur = Duration.between(now, next);
+        long initialDelay = dur.getSeconds();
+        ScheduledExecutorService sched = Executors.newScheduledThreadPool(1);
+        sched.scheduleAtFixedRate(() -> setMessage(message),
+                initialDelay,
+                TimeUnit.DAYS.toSeconds(1),
+                TimeUnit.SECONDS);
+        schedule.put(message, sched);
     }
 
     protected void setMessage(byte[] message) {

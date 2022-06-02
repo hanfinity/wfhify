@@ -110,10 +110,6 @@ public class Client {
         }
     }
 
-    public static String get(String url) {
-        return "";
-    }
-
     protected static String load_url() {
         try {
             File inFile = new File (persist);
