@@ -89,10 +89,10 @@ public class Client {
         Matcher endMatch = time.matcher(end);
         if(startMatch.find() && endMatch.find()) {
             send_pkt(set_sched(message,
-                    Integer.parseInt(startMatch.group(1)),
-                    Integer.parseInt(startMatch.group(2)),
-                    Integer.parseInt(endMatch.group(1)),
-                    Integer.parseInt(endMatch.group(2))));
+                    Short.parseShort(startMatch.group(1)),
+                    Short.parseShort(startMatch.group(2)),
+                    Short.parseShort(endMatch.group(1)),
+                    Short.parseShort(endMatch.group(2))));
 
         } else {
             throw new Exception("invalid time");

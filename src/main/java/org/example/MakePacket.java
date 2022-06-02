@@ -93,7 +93,7 @@ public class MakePacket {
         return text_packet(LIST_RESP, message);
     }
 
-    static byte[] set_sched(String message, int startH, int startM, int endH, int endM) throws Exception {
+    static byte[] set_sched(String message, short startH, short startM, short endH, short endM) throws Exception {
         return generic_packet(MAKE_SCHED, message, startH, startM, endH, endM);
     }
 
@@ -106,10 +106,10 @@ public class MakePacket {
     }
 
     static byte[] text_packet(int code, String message) throws Exception {
-        return generic_packet(code, message, -1, -1, -1, -1);
+        return generic_packet(code, message, (short)-1, (short)-1, (short)-1, (short)-1);
     }
 
-    private static byte[] generic_packet(int code, String message, int startH, int startM, int endH, int endM) throws Exception {
+    private static byte[] generic_packet(int code, String message, short startH, short startM, short endH, short endM) throws Exception {
 
         byte[] toReturn;
         if(startH == -1) toReturn = new byte[48];
@@ -125,19 +125,19 @@ public class MakePacket {
             }
         }
         if(code != -1) {
-            System.arraycopy(ByteBuffer.allocate(4).putInt(startH).array(),
+            System.arraycopy(ByteBuffer.allocate(2).putShort(startH).array(),
                     2,
                     toReturn,
                     48, 2);
-            System.arraycopy(ByteBuffer.allocate(4).putInt(startM).array(),
+            System.arraycopy(ByteBuffer.allocate(2).putShort(startM).array(),
                     2,
                     toReturn,
                     50, 2);
-            System.arraycopy(ByteBuffer.allocate(4).putInt(endH).array(),
+            System.arraycopy(ByteBuffer.allocate(2).putShort(endH).array(),
                     2,
                     toReturn,
                     52, 2);
-            System.arraycopy(ByteBuffer.allocate(4).putInt(endM).array(),
+            System.arraycopy(ByteBuffer.allocate(2).putShort(endM).array(),
                     2,
                     toReturn,
                     54, 2);
