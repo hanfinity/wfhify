@@ -84,14 +84,19 @@ public class Client {
     }
 
     protected void makeSchedule(String message, String start, String end) throws Exception {
-        Pattern time = Pattern.compile("(\\d\\d):(\\d\\d)");
+        Pattern time = Pattern.compile("(\\d+):(\\d+)");
         Matcher startMatch = time.matcher(start);
         Matcher endMatch = time.matcher(end);
-        send_pkt(set_sched(message,
-                Integer.parseInt(startMatch.group(1)),
-                Integer.parseInt(startMatch.group(2)),
-                Integer.parseInt(endMatch.group(1)),
-                Integer.parseInt(endMatch.group(2))));
+        if(startMatch.find() && endMatch.find()) {
+            send_pkt(set_sched(message,
+                    Integer.parseInt(startMatch.group(1)),
+                    Integer.parseInt(startMatch.group(2)),
+                    Integer.parseInt(endMatch.group(1)),
+                    Integer.parseInt(endMatch.group(2))));
+
+        } else {
+            throw new Exception("invalid time");
+        }
     }
 
     public void startConnection(String ip, int port) {

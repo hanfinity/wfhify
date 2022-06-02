@@ -200,7 +200,7 @@ public class Server {
             );
             return list_mess("OK");
         } catch (Exception e) {
-            System.out.println("invalid time");
+            System.out.println("invalid time: " + e.getMessage());
             return error(ILLEGAL_MESS);
         }
     }
