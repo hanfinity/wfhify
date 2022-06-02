@@ -124,7 +124,7 @@ public class MakePacket {
                 toReturn[i + 8] = 0x00;
             }
         }
-        if(code != -1) {
+        if(startH != -1) {
             System.arraycopy(ByteBuffer.allocate(2).putShort(startH).array(),
                     0,
                     toReturn,
