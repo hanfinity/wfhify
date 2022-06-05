@@ -88,6 +88,9 @@ public class Client {
         Matcher startMatch = time.matcher(start);
         Matcher endMatch = time.matcher(end);
         if(startMatch.find() && endMatch.find()) {
+            System.out.println("Event: " + message);
+            System.out.println(startMatch.group(1) + ":" + startMatch.group(2) + " - "
+                    + endMatch.group(1) + ":" + endMatch.group(2));
             send_pkt(set_sched(message,
                     Short.parseShort(startMatch.group(1)),
                     Short.parseShort(startMatch.group(2)),

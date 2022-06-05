@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static org.example.OpCode.*;
 
@@ -112,13 +113,20 @@ public class MakePacket {
     private static byte[] generic_packet(int code, String message, short startH, short startM, short endH, short endM) throws Exception {
 
         byte[] toReturn;
-        if(startH == -1) toReturn = new byte[48];
-        else toReturn = new byte[56];
+        int length;
+        if(startH == -1) {
+            toReturn = new byte[48];
+            length = 40;
+        }
+        else {
+            toReturn = new byte[56];
+            length = 48;
+        }
         message = message.trim();
         if(message.length() > 40 || message.length() < 1) {
             throw(new Exception("message size invalid"));
         } else {
-            System.arraycopy(header(code, 40), 0, toReturn, 0, 8);
+            System.arraycopy(header(code, length), 0, toReturn, 0, 8);
             System.arraycopy(message.getBytes(StandardCharsets.UTF_8), 0, toReturn, 8, message.length());
             for(int i = message.length(); i<40; ++i) {
                 toReturn[i + 8] = 0x00;
@@ -141,6 +149,7 @@ public class MakePacket {
                     0,
                     toReturn,
                     54, 2);
+            System.out.println(Arrays.toString(toReturn));
         }
         return toReturn;
     }
@@ -154,4 +163,5 @@ public class MakePacket {
                 8, 4);
         return toReturn;
     }
+
 }
