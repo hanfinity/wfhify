@@ -238,10 +238,6 @@ public class Server {
                 initialDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
-        sched.scheduleAtFixedRate(() -> setMessage(lastMessage),
-                initialDelay,
-                TimeUnit.DAYS.toSeconds(1),
-                TimeUnit.SECONDS);
     }
 
     protected void setMessage(byte[] message) {
