@@ -4,8 +4,6 @@ package org.example;
  * Hello world!
  *
  */
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +11,6 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -33,6 +30,7 @@ public class Server {
     private JFrame frame;
     private JLabel label;
     private String currMessage;
+    private String lastMessage;
     private InputStream in;
     private OutputStream os;
     private Map<byte[], ScheduledExecutorService> schedule;
@@ -43,6 +41,7 @@ public class Server {
      */
     public Server() {
         schedule = new HashMap<>();
+        lastMessage = "default";
     }
 
     private void createAndShowGUI(String message) {
@@ -223,16 +222,26 @@ public class Server {
         }
         System.out.println("message schedule: " + start_hour + ":" + start_minute + " - " +
                 end_hour + ":" + end_minute);
+        ScheduledExecutorService sched = Executors.newScheduledThreadPool(1);
+        makeSchedule(sched, start_hour, start_minute, message, now);
+        makeSchedule(sched, end_hour, end_minute, lastMessage.getBytes(StandardCharsets.UTF_8), now);
+
+        schedule.put(message, sched);
+    }
+
+    private void makeSchedule(ScheduledExecutorService sched, int start_hour, int start_minute, byte[] message, ZonedDateTime now) {
         ZonedDateTime next = now.withHour(start_hour).withMinute(start_minute).withSecond(0);
         if(now.compareTo(next) > 0) next = next.plusDays(1);
         Duration dur = Duration.between(now, next);
         long initialDelay = dur.getSeconds();
-        ScheduledExecutorService sched = Executors.newScheduledThreadPool(1);
         sched.scheduleAtFixedRate(() -> setMessage(message),
                 initialDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
-        schedule.put(message, sched);
+        sched.scheduleAtFixedRate(() -> setMessage(lastMessage),
+                initialDelay,
+                TimeUnit.DAYS.toSeconds(1),
+                TimeUnit.SECONDS);
     }
 
     protected void setMessage(byte[] message) {
