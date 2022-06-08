@@ -73,6 +73,7 @@ public class Client {
                     String end = reader.readLine();
                     try {
                         client.makeSchedule(message, start, end);
+                        if(client.getPacket().equals("OK")) System.out.println("Success!");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -84,6 +85,15 @@ public class Client {
                     do {
                         code = client.readSchedulePacket();
                     } while(code == LIST_RESP);
+                    break;
+                case 5: // delete a scheduled response
+                    System.out.println("Please enter the text of the message to delete");
+                    String delMessage = reader.readLine();
+                    try {
+                        client.send_pkt(text_packet(DEL_SCHED, delMessage));
+                    } catch (Exception e) {
+                        System.out.println("Couldn't send request: " + e.getMessage());
+                    }
                     break;
                 case 9: // exit client application
                     System.out.println("Goodbye!");
@@ -179,7 +189,7 @@ public class Client {
                     0, 2);
             String message_text = new String(text, StandardCharsets.UTF_8);
             System.out.printf("%s (%2d:%2d - %2d:%2d)\n",
-                    message_text,
+                    message_text.trim(),
                     ByteBuffer.wrap(startHA).getShort(),
                     ByteBuffer.wrap(startMA).getShort(),
                     ByteBuffer.wrap(endHA).getShort(),

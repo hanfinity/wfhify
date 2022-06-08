@@ -38,7 +38,7 @@ public class Server {
             startHour = startH;
             startMinute = startM;
             endHour = endH;
-            endMinute = endH;
+            endMinute = endM;
             schedule = s;
         }
     }
@@ -165,6 +165,17 @@ public class Server {
                                                     q.getValue().endHour, q.getValue().endMinute));
                         }
                         os.write(done());
+                        break;
+                    case DEL_SCHED:
+                        System.out.println("client requests delete message");
+                        message_schedule ms = schedule.get(payload);
+                        if(ms != null) {
+                            ms.schedule.shutdown();
+                            schedule.remove(payload);
+                            System.out.println("successfully deleted " + new String(payload, StandardCharsets.UTF_8));
+                        } else {
+                            System.out.println(new String(payload, StandardCharsets.UTF_8) + " not found");
+                        }
                         break;
                     default:
                         System.out.println("...");
