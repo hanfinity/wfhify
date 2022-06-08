@@ -5,9 +5,6 @@ package org.example;
  *
  */
 
-import org.javatuples.Quintet;
-import org.javatuples.Triplet;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -31,6 +28,20 @@ import static org.example.OpCode.*;
 
 
 public class Server {
+    class message_schedule {
+        public short startHour;
+        public short startMinute;
+        public short endHour;
+        public short endMinute;
+        ScheduledExecutorService schedule;
+        message_schedule(short startH, short startM, short endH, short endM, ScheduledExecutorService s) {
+            startHour = startH;
+            startMinute = startM;
+            endHour = endH;
+            endMinute = endH;
+            schedule = s;
+        }
+    }
     public static final int TIMEOUT = 15000;
     private ServerSocket serverSocket;
     private Socket clientSocket;
@@ -40,7 +51,7 @@ public class Server {
     private String lastMessage;
     private InputStream in;
     private OutputStream os;
-    private Map<byte[], Quintet<Short, Short, Short, Short, ScheduledExecutorService>> schedule;
+    private Map<byte[], message_schedule> schedule;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -147,11 +158,11 @@ public class Server {
                         break;
                     case GET_SCHED:
                         System.out.println("client requests schedule");
-                        for (Map.Entry<byte[], Quintet<Short, Short, Short, Short, ScheduledExecutorService>> q:
+                        for (Map.Entry<byte[], message_schedule> q:
                                 schedule.entrySet()) {
                             os.write(generic_packet(LIST_RESP, new String(q.getKey(), StandardCharsets.UTF_8),
-                                                    q.getValue().getValue0(), q.getValue().getValue1(),
-                                                    q.getValue().getValue2(), q.getValue().getValue3()));
+                                                    q.getValue().startHour, q.getValue().startMinute,
+                                                    q.getValue().endHour, q.getValue().endMinute));
                         }
                         os.write(done());
                         break;
@@ -243,7 +254,7 @@ public class Server {
         makeSchedule(sched, start_hour, start_minute, message, now);
         makeSchedule(sched, end_hour, end_minute, lastMessage.getBytes(StandardCharsets.UTF_8), now);
 
-        schedule.put(message, new Quintet<>(start_hour, start_minute,
+        schedule.put(message, new message_schedule(start_hour, start_minute,
                                             end_hour, end_minute,
                                             sched));
     }
