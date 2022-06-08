@@ -84,6 +84,7 @@ public class Client {
                     do {
                         code = client.readSchedulePacket();
                     } while(code == LIST_RESP);
+                    break;
                 case 9: // exit client application
                     System.out.println("Goodbye!");
                     quit = true;

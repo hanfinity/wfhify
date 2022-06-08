@@ -81,6 +81,21 @@
           <artifactId>maven-site-plugin</artifactId>
           <version>3.7.1</version>
         </plugin>
+          <plugin>
+              <artifactId>maven-dependency-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>copy-dependencies</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>copy-dependencies</goal>
+                      </goals>
+                      <configuration>
+                          <useBaseVersion>false</useBaseVersion>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
         <plugin>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
