@@ -33,9 +33,7 @@ public class Client {
             "5 - Delete a Scheduled Message\n" +
             "6 - Set Working Hours\n" +
             "7 - Get Working Hours\n" +
-            "8 - Set After Hours Message\n" +
-            "9 - Set Work Hours Message\n" +
-            "0 - Quit\n" +
+            "8 - Quit\n" +
             "Please enter your selection:";
 
     public static void main(String[] args) throws IOException {
@@ -86,6 +84,7 @@ public class Client {
                     do {
                         code = client.readSchedulePacket();
                     } while(code == LIST_RESP);
+                    System.out.println("End of stored messages");
                     break;
                 case 5: // delete a scheduled response
                     System.out.println("Please enter the text of the message to delete");
@@ -96,7 +95,22 @@ public class Client {
                         System.out.println("Couldn't send request: " + e.getMessage());
                     }
                     break;
-                case 0: // exit client application
+                case 6: // set working hours
+                    System.out.println("Please enter off-hours message: (max 40 characters)");
+                    String oooMessage = reader.readLine();
+                    System.out.println("Please enter start of work day (hh:mm)(24h)");
+                    String startWork = reader.readLine();
+                    System.out.println("Please enter end of work day (hh:mm)(24h)");
+                    String endWork = reader.readLine();
+                    try {
+                        client.workHours(oooMessage, endWork, startWork);
+                    } catch (Exception e) {
+                        System.err.println("Failed to set message: " + e.getMessage());
+                    }
+                    break;
+                case 7: // get working hours
+                    break;
+                case 8: // exit client application
                     System.out.println("Goodbye!");
                     quit = true;
                     break;
@@ -108,7 +122,15 @@ public class Client {
         save_url(domainName);
     }
 
+    protected void workHours(String message, String start, String end) throws Exception {
+        time_packet(SET_HRS, message, start, end);
+    }
+
     protected void makeSchedule(String message, String start, String end) throws Exception {
+        time_packet(MAKE_SCHED, message, start, end);
+    }
+
+    protected void time_packet(int code, String message, String start, String end) throws Exception {
         Pattern time = Pattern.compile("(\\d+):(\\d+)");
         Matcher startMatch = time.matcher(start);
         Matcher endMatch = time.matcher(end);
@@ -116,7 +138,7 @@ public class Client {
             System.out.println("Event: " + message);
             System.out.println(startMatch.group(1) + ":" + startMatch.group(2) + " - "
                     + endMatch.group(1) + ":" + endMatch.group(2));
-            send_pkt(set_sched(message,
+            send_pkt(set_sched(code, message,
                     Short.parseShort(startMatch.group(1)),
                     Short.parseShort(startMatch.group(2)),
                     Short.parseShort(endMatch.group(1)),

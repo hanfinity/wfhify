@@ -26,19 +26,22 @@ import static org.example.OpCode.*;
 
 
 public class Server {
-    class message_schedule {
+    class MessageSchedule {
         public short startHour;
         public short startMinute;
         public short endHour;
         public short endMinute;
         ScheduledExecutorService schedule;
-        message_schedule(short startH, short startM, short endH, short endM, ScheduledExecutorService s) {
+        MessageSchedule(short startH, short startM, short endH, short endM, ScheduledExecutorService s) {
             startHour = startH;
             startMinute = startM;
             endHour = endH;
             endMinute = endM;
             schedule = s;
         }
+    }
+    interface Scheduler {
+        void schedule(byte[] m, MessageSchedule ms);
     }
     public static final int TIMEOUT = 15000;
     private ServerSocket serverSocket;
@@ -47,9 +50,11 @@ public class Server {
     private JLabel label;
     private String currMessage;
     private String lastMessage;
+    private String offWork = "Outside of<br>Work Hours";
     private InputStream in;
     private OutputStream os;
-    private Map<byte[], message_schedule> schedule;
+    private Map<byte[], MessageSchedule> schedule;
+    private MessageSchedule workHours;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -161,11 +166,11 @@ public class Server {
                         break;
                     case MAKE_SCHED:
                         System.out.println("client scheduling a message");
-                        os.write(decodeSchedulePacket(payload));
+                        os.write(decodeSchedulePacket(MAKE_SCHED, payload));
                         break;
                     case GET_SCHED:
                         System.out.println("client requests schedule");
-                        for (Map.Entry<byte[], message_schedule> q:
+                        for (Map.Entry<byte[], MessageSchedule> q:
                                 schedule.entrySet()) {
                             os.write(generic_packet(LIST_RESP, new String(q.getKey(), StandardCharsets.UTF_8),
                                                     q.getValue().startHour, q.getValue().startMinute,
@@ -177,7 +182,7 @@ public class Server {
                         System.out.println("client requests delete message");
                         byte[] key = new byte[40];
                         System.arraycopy(payload, 0, key, 0, 40);
-                        message_schedule ms = schedule.get(key);
+                        MessageSchedule ms = schedule.get(key);
                         if(ms != null) {
                             ms.schedule.shutdown();
                             schedule.remove(key);
@@ -185,6 +190,10 @@ public class Server {
                         } else {
                             System.out.println(new String(payload, StandardCharsets.UTF_8) + " not found");
                         }
+                        break;
+                    case SET_HRS:
+                        System.out.println("client setting off-work message");
+                        os.write(decodeSchedulePacket(SET_HRS, payload));
                         break;
                     default:
                         System.out.println("...");
@@ -211,7 +220,7 @@ public class Server {
 
     }
 
-    protected byte[] decodeSchedulePacket(byte[] payload) {
+    protected byte[] decodeSchedulePacket(int code, byte[] payload) {
         byte[] message = new byte[40];
         System.arraycopy(payload,
                 0,
@@ -238,13 +247,27 @@ public class Server {
                 endMA,
                 0, 2);
         try {
-            scheduleMessage(
+            if(code == MAKE_SCHED)
+                scheduleMaker(
                     ByteBuffer.wrap(startHA).getShort(),
                     ByteBuffer.wrap(startMA).getShort(),
                     ByteBuffer.wrap(endHA).getShort(),
                     ByteBuffer.wrap(endMA).getShort(),
-                    message
-            );
+                    message, (m, ms) -> schedule.put(m, ms)
+                );
+            else if(code == SET_HRS) {
+                scheduleMaker(
+                        ByteBuffer.wrap(startHA).getShort(),
+                        ByteBuffer.wrap(startMA).getShort(),
+                        ByteBuffer.wrap(endHA).getShort(),
+                        ByteBuffer.wrap(endMA).getShort(),
+                        message,
+                        (m, ms) -> {
+                            offWork = new String(m, StandardCharsets.UTF_8);
+                            workHours = ms;
+                        }
+                );
+            }
             return list_mess("OK");
         } catch (Exception e) {
             System.out.println("invalid time: " + e.getMessage());
@@ -253,14 +276,17 @@ public class Server {
         }
     }
 
-    /**
-     * function to create a scheduled message
-     * @param start_hour the hour (24h format) of the day to change the message
-     * @param start_minute the minute of the day to change the message
-     * @param message the message (in byte array form)
-     * @throws Exception if the start_hour or start_minute are invalid
-     */
-    protected void scheduleMessage(short start_hour, short start_minute, short end_hour, short end_minute, byte[] message) throws Exception{
+        /**
+         * function to create a scheduled message
+         * @param start_hour the hour (24h format) of the day to change the message
+         * @param start_minute the minute of the day to change the message
+         * @param message the message (in byte array form)
+         * @param s what to do with the created schedule
+         * @throws Exception if the start_hour or start_minute are invalid
+         */
+    protected void scheduleMaker(short start_hour, short start_minute,
+                                 short end_hour, short end_minute,
+                                 byte[] message, Scheduler s) throws Exception{
         ZonedDateTime now = ZonedDateTime.now();
         if(start_hour > 23 || start_hour < 0 || start_minute > 59 || start_minute < 0) {
             throw new Exception("Invalid start time: " + start_hour + ":" + start_minute);
@@ -274,7 +300,7 @@ public class Server {
         makeSchedule(sched, start_hour, start_minute, message, now);
         makeSchedule(sched, end_hour, end_minute, lastMessage.getBytes(StandardCharsets.UTF_8), now);
 
-        schedule.put(message, new message_schedule(start_hour, start_minute,
+        s.schedule(message, new MessageSchedule(start_hour, start_minute,
                                             end_hour, end_minute,
                                             sched));
     }

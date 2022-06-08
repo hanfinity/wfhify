@@ -94,8 +94,8 @@ public class MakePacket {
         return text_packet(LIST_RESP, message);
     }
 
-    static byte[] set_sched(String message, short startH, short startM, short endH, short endM) throws Exception {
-        return generic_packet(MAKE_SCHED, message, startH, startM, endH, endM);
+    static byte[] set_sched(int code, String message, short startH, short startM, short endH, short endM) throws Exception {
+        return generic_packet(code, message, startH, startM, endH, endM);
     }
 
     static byte[] get_sched() {
