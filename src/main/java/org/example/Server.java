@@ -15,9 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +56,16 @@ public class Server {
      * event-dispatching thread.
      */
     public Server() {
-        schedule = new HashMap<>();
+        schedule = new TreeMap<>((o1, o2) -> {
+            if(o2.length > o1.length) return -1;
+            for(int i=0; i<o1.length; ++i) {
+                if(o1[i] > o2[i]) return 1;
+                if(o1[i] < o2[i]) return -1;
+            }
+            return 0;
+        }
+
+        );
         lastMessage = "default";
     }
 
@@ -173,7 +180,7 @@ public class Server {
                         message_schedule ms = schedule.get(key);
                         if(ms != null) {
                             ms.schedule.shutdown();
-                            schedule.remove(payload);
+                            schedule.remove(key);
                             System.out.println("successfully deleted " + new String(payload, StandardCharsets.UTF_8));
                         } else {
                             System.out.println(new String(payload, StandardCharsets.UTF_8) + " not found");
