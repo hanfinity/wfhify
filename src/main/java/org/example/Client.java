@@ -1,10 +1,15 @@
 package org.example;
 
+import org.javatuples.Pair;
+import org.javatuples.Tuple;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,10 +30,11 @@ public class Client {
             "2 - Get Current Message\n" +
             "3 - Enter Scheduled Message\n" +
             "4 - Get Scheduled Messages\n" +
-            "5 - Set Working Hours\n" +
-            "6 - Get Working Hours\n" +
-            "7 - Set After Hours Message\n" +
-            "8 - Quit\n" +
+            "5 - Delete a Scheduled Message\n" +
+            "6 - Set Working Hours\n" +
+            "7 - Get Working Hours\n" +
+            "8 - Set After Hours Message\n" +
+            "9 - Quit\n" +
             "Please enter your selection:";
 
     public static void main(String[] args) throws IOException {
@@ -71,7 +77,14 @@ public class Client {
                         e.printStackTrace();
                     }
                     break;
-                case 8: // exit client application
+                case 4: // list scheduled messages
+                    System.out.println("Requesting schedule of messages from server:");
+                    client.send_pkt(get_sched());
+                    int code;
+                    do {
+                        code = client.readSchedulePacket();
+                    } while(code == LIST_RESP);
+                case 9: // exit client application
                     System.out.println("Goodbye!");
                     quit = true;
                     break;
@@ -132,6 +145,47 @@ public class Client {
         int code = readMessage(message, in);
         String message_text = new String(message, StandardCharsets.UTF_8);
         return message_text.trim();
+    }
+
+    protected int readSchedulePacket() throws IOException {
+        byte[] message = new byte[MAX_PKT];
+        int code = readMessage(message, in);
+        if (code == LIST_RESP) {
+            byte[] text = new byte[40];
+            System.arraycopy(message,
+                    0,
+                    text,
+                    0, 40);
+            byte[] startHA = new byte[2];
+            System.arraycopy(message,
+                    40,
+                    startHA,
+                    0, 2);
+            byte[] startMA = new byte[2];
+            System.arraycopy(message,
+                    42,
+                    startMA,
+                    0, 2);
+            byte[] endHA = new byte[2];
+            System.arraycopy(message,
+                    44,
+                    endHA,
+                    0, 2);
+            byte[] endMA = new byte[2];
+            System.arraycopy(message,
+                    46,
+                    endMA,
+                    0, 2);
+            String message_text = new String(text, StandardCharsets.UTF_8);
+            System.out.printf("%s (%2d:%2d - %2d:%2d)\n",
+                    message_text,
+                    ByteBuffer.wrap(startHA).getShort(),
+                    ByteBuffer.wrap(startMA).getShort(),
+                    ByteBuffer.wrap(endHA).getShort(),
+                    ByteBuffer.wrap(endMA).getShort());
+        }
+        return code;
+
     }
 
     public void stopConnection() {

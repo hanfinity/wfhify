@@ -11,4 +11,5 @@ public interface Err {
     int IN_USE = 0x20000008;
     int SCHED_FULL = 0x20000009;
     int NO_SUCH_ITEM = 0x20000010;
+    int SCHED_EMPTY = 0x20000011;
 }

@@ -12,4 +12,5 @@ public interface OpCode {
     int DEL_SCHED = 0x10000009;
     int SET_HRS = 0x10000010;
     int GET_HRS = 0x10000011;
+    int DONE = 0x10000012;
 }

@@ -5,15 +5,22 @@ package org.example;
  *
  */
 
+import org.javatuples.Quintet;
+import org.javatuples.Triplet;
+
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +40,7 @@ public class Server {
     private String lastMessage;
     private InputStream in;
     private OutputStream os;
-    private Map<byte[], ScheduledExecutorService> schedule;
+    private Map<byte[], Quintet<Short, Short, Short, Short, ScheduledExecutorService>> schedule;
     /**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
@@ -138,6 +145,16 @@ public class Server {
                         System.out.println("client scheduling a message");
                         os.write(decodeSchedulePacket(payload));
                         break;
+                    case GET_SCHED:
+                        System.out.println("client requests schedule");
+                        for (Map.Entry<byte[], Quintet<Short, Short, Short, Short, ScheduledExecutorService>> q:
+                                schedule.entrySet()) {
+                            os.write(generic_packet(LIST_RESP, new String(q.getKey(), StandardCharsets.UTF_8),
+                                                    q.getValue().getValue0(), q.getValue().getValue1(),
+                                                    q.getValue().getValue2(), q.getValue().getValue3()));
+                        }
+                        os.write(done());
+                        break;
                     default:
                         System.out.println("...");
                 }
@@ -212,7 +229,7 @@ public class Server {
      * @param message the message (in byte array form)
      * @throws Exception if the start_hour or start_minute are invalid
      */
-    protected void scheduleMessage(int start_hour, int start_minute, int end_hour, int end_minute, byte[] message) throws Exception{
+    protected void scheduleMessage(short start_hour, short start_minute, short end_hour, short end_minute, byte[] message) throws Exception{
         ZonedDateTime now = ZonedDateTime.now();
         if(start_hour > 23 || start_hour < 0 || start_minute > 59 || start_minute < 0) {
             throw new Exception("Invalid start time: " + start_hour + ":" + start_minute);
@@ -226,7 +243,9 @@ public class Server {
         makeSchedule(sched, start_hour, start_minute, message, now);
         makeSchedule(sched, end_hour, end_minute, lastMessage.getBytes(StandardCharsets.UTF_8), now);
 
-        schedule.put(message, sched);
+        schedule.put(message, new Quintet<>(start_hour, start_minute,
+                                            end_hour, end_minute,
+                                            sched));
     }
 
     private void makeSchedule(ScheduledExecutorService sched, int start_hour, int start_minute, byte[] message, ZonedDateTime now) {

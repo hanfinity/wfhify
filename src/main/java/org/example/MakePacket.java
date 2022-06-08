@@ -98,6 +98,14 @@ public class MakePacket {
         return generic_packet(MAKE_SCHED, message, startH, startM, endH, endM);
     }
 
+    static byte[] get_sched() {
+        return header(GET_SCHED, 0);
+    }
+
+    static byte[] done() {
+        return header(DONE, 0);
+    }
+
     /**
      * create a packet instructing the server to return the current message
      * @return byte array representing the packet
@@ -110,7 +118,7 @@ public class MakePacket {
         return generic_packet(code, message, (short)-1, (short)-1, (short)-1, (short)-1);
     }
 
-    private static byte[] generic_packet(int code, String message, short startH, short startM, short endH, short endM) throws Exception {
+    static byte[] generic_packet(int code, String message, short startH, short startM, short endH, short endM) throws Exception {
 
         byte[] toReturn;
         int length;
@@ -163,5 +171,7 @@ public class MakePacket {
                 8, 4);
         return toReturn;
     }
+
+
 
 }
