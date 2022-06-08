@@ -34,7 +34,8 @@ public class Client {
             "6 - Set Working Hours\n" +
             "7 - Get Working Hours\n" +
             "8 - Set After Hours Message\n" +
-            "9 - Quit\n" +
+            "9 - Set Work Hours Message\n" +
+            "0 - Quit\n" +
             "Please enter your selection:";
 
     public static void main(String[] args) throws IOException {
@@ -69,7 +70,7 @@ public class Client {
                     String message = reader.readLine();
                     System.out.println("Please enter start time (hh:mm)(24h)");
                     String start = reader.readLine();
-                    System.out.println("Please enter start time (hh:mm)(24h)");
+                    System.out.println("Please enter end time (hh:mm)(24h)");
                     String end = reader.readLine();
                     try {
                         client.makeSchedule(message, start, end);
@@ -95,7 +96,7 @@ public class Client {
                         System.out.println("Couldn't send request: " + e.getMessage());
                     }
                     break;
-                case 9: // exit client application
+                case 0: // exit client application
                     System.out.println("Goodbye!");
                     quit = true;
                     break;
@@ -188,7 +189,7 @@ public class Client {
                     endMA,
                     0, 2);
             String message_text = new String(text, StandardCharsets.UTF_8);
-            System.out.printf("%s (%2d:%2d - %2d:%2d)\n",
+            System.out.printf("%s (%d:%02d - %d:%02d)\n",
                     message_text.trim(),
                     ByteBuffer.wrap(startHA).getShort(),
                     ByteBuffer.wrap(startMA).getShort(),

@@ -168,7 +168,9 @@ public class Server {
                         break;
                     case DEL_SCHED:
                         System.out.println("client requests delete message");
-                        message_schedule ms = schedule.get(payload);
+                        byte[] key = new byte[40];
+                        System.arraycopy(payload, 0, key, 0, 40);
+                        message_schedule ms = schedule.get(key);
                         if(ms != null) {
                             ms.schedule.shutdown();
                             schedule.remove(payload);
