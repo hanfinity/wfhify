@@ -1,15 +1,9 @@
 package org.example;
 
-import org.javatuples.Pair;
-import org.javatuples.Tuple;
-
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,7 +76,7 @@ public class Client {
                     client.send_pkt(get_sched());
                     int code;
                     do {
-                        code = client.readSchedulePacket();
+                        code = client.readSchedulePacket(false);
                     } while(code == LIST_RESP);
                     System.out.println("End of stored messages");
                     break;
@@ -109,6 +103,9 @@ public class Client {
                     }
                     break;
                 case 7: // get working hours
+                    client.send_pkt(get_hours());
+                    System.out.println("Work Hours:");
+                    client.readSchedulePacket(true);
                     break;
                 case 8: // exit client application
                     System.out.println("Goodbye!");
@@ -181,7 +178,7 @@ public class Client {
         return message_text.trim();
     }
 
-    protected int readSchedulePacket() throws IOException {
+    protected int readSchedulePacket(boolean hours) throws IOException {
         byte[] message = new byte[MAX_PKT];
         int code = readMessage(message, in);
         if (code == LIST_RESP) {
@@ -211,7 +208,13 @@ public class Client {
                     endMA,
                     0, 2);
             String message_text = new String(text, StandardCharsets.UTF_8);
-            System.out.printf("%s (%d:%02d - %d:%02d)\n",
+            if(hours) System.out.printf("%s (%d:%02d - %d:%02d)\n",
+                    message_text.trim(),
+                    ByteBuffer.wrap(endHA).getShort(),
+                    ByteBuffer.wrap(endMA).getShort(),
+                    ByteBuffer.wrap(startHA).getShort(),
+                    ByteBuffer.wrap(startMA).getShort());
+            else System.out.printf("%s (%d:%02d - %d:%02d)\n",
                     message_text.trim(),
                     ByteBuffer.wrap(startHA).getShort(),
                     ByteBuffer.wrap(startMA).getShort(),

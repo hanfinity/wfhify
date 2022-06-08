@@ -102,6 +102,10 @@ public class MakePacket {
         return header(GET_SCHED, 0);
     }
 
+    static byte [] get_hours() {
+        return header(GET_HRS, 0);
+    }
+
     static byte[] done() {
         return header(DONE, 0);
     }

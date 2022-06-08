@@ -195,6 +195,12 @@ public class Server {
                         System.out.println("client setting off-work message");
                         os.write(decodeSchedulePacket(SET_HRS, payload));
                         break;
+                    case GET_HRS:
+                        System.out.println("client requests work hours");
+                        os.write(generic_packet(LIST_RESP, offWork,
+                                workHours.startHour, workHours.startMinute,
+                                workHours.endHour, workHours.endMinute));
+                        break;
                     default:
                         System.out.println("...");
                 }
