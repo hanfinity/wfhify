@@ -158,6 +158,7 @@ public class Server {
                         break;
                     case SET_MESS:
                         System.out.println("new message received");
+                        lastMessage = new String(payload, StandardCharsets.UTF_8);
                         setMessage(payload);
                         break;
                     case LIST_MESS:

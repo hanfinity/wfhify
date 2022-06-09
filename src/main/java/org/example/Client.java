@@ -98,6 +98,9 @@ public class Client {
                     String endWork = reader.readLine();
                     try {
                         client.workHours(oooMessage, endWork, startWork);
+                        if(client.getPacket().equals("OK")) {
+                            System.out.println("Success");
+                        }
                     } catch (Exception e) {
                         System.err.println("Failed to set message: " + e.getMessage());
                     }
@@ -154,6 +157,7 @@ public class Client {
             send_pkt(hello("asdf"));
         } catch (IOException e) {
             System.err.println("Couldn't open connection!");
+            System.exit(1);
         } catch (Exception e) {
             System.err.println("Failed to send hello packet");
         }
